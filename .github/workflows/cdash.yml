@@ -1,0 +1,27 @@
+name: cdash
+on:
+  push:
+    branches:
+    - develop
+
+jobs:
+  cdash:
+    runs-on: ubuntu-latest
+
+    env:
+      FC: gfortran
+      CC: gcc
+      CDASH_TOKEN: ${{ secrets.CDASH_TOKEN }}
+
+    steps:
+
+    - name: "Build dependencies with Spack"
+      uses: NOAA-EMC/ci-test-spack-package@dependencies-only
+      with:
+        package-name: grib-util
+        package-variants: +tests ${{ matrix.openmp }} ^bacio@2.6.0 ^w3emc@2.10.0 ^g2@develop ^g2c@develop +utils +build_v2_api ${{ matrix.ip_spec }}
+        repo-cache-key-suffix: deps-${{ matrix.os }}-${{ matrix.openmp }}-${{ matrix.ip_spec }}-1
+        dependencies-only: true
+
+    - name: CDash
+      uses: NOAA-EMC/ci-cdash@develop
